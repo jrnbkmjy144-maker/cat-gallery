@@ -117,7 +117,7 @@ erDiagram
 ### Крок 1. Клонування репозиторію та встановлення залежностей
 
 ```bash
-git clone <URL_вашого_репозиторію>
+git clone https://github.com/jrnbkmjy144-maker/cat-gallery.git
 cd purrfect-art
 npm install
 ```
