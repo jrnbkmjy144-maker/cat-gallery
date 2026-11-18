@@ -81,6 +81,8 @@ router.post('/', validateOrderCreate, async (req, res, next) => {
             [req.user.id, artworkId, deliveryPhone, comment]
         );
 
+        await pool.query('UPDATE artworks SET is_available = false WHERE id = $1', [artworkId]);
+
         res.status(201).json({
             message: 'Замовлення успішно створено',
             order: result.rows[0]
@@ -115,6 +117,14 @@ router.patch('/:id', validateIdParam, async (req, res, next) => {
         const nextComment = req.body.comment !== undefined ? String(req.body.comment).trim() : existing.comment;
         const nextPhone = req.body.delivery_phone !== undefined ? String(req.body.delivery_phone).trim() : existing.delivery_phone;
 
+        const PHONE_REGEX = /^\+?[0-9\s\-\(\)]{9,18}$/;
+        if (req.body.delivery_phone !== undefined && !PHONE_REGEX.test(nextPhone)) {
+            return res.status(400).json({ error: 'Вкажіть коректний контактний номер телефону (9–18 символів).' });
+        }
+        if (req.body.comment !== undefined && nextComment.length > 300) {
+            return res.status(400).json({ error: 'Коментар не може перевищувати 300 символів.' });
+        }
+
         const updated = await pool.query(
             `UPDATE orders
              SET status = $1, comment = $2, delivery_phone = $3
@@ -122,6 +132,10 @@ router.patch('/:id', validateIdParam, async (req, res, next) => {
              RETURNING *`,
             [nextStatus, nextComment, nextPhone, req.resourceId]
         );
+
+        if (nextStatus === 'cancelled' && existing.status !== 'cancelled') {
+            await pool.query('UPDATE artworks SET is_available = true WHERE id = $1', [existing.artwork_id]);
+        }
 
         res.status(200).json(updated.rows[0]);
     } catch (err) {
@@ -143,6 +157,7 @@ router.delete('/:id', validateIdParam, async (req, res, next) => {
         }
 
         await pool.query('DELETE FROM orders WHERE id = $1', [req.resourceId]);
+        await pool.query('UPDATE artworks SET is_available = true WHERE id = $1', [existing.artwork_id]);
         res.status(200).json({ message: 'Замовлення успішно видалено', deleted_id: req.resourceId });
     } catch (err) {
         next(err);

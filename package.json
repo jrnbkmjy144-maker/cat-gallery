@@ -5,7 +5,8 @@
     "main": "src/server.js",
     "scripts": {
         "start": "node src/server.js",
-        "dev": "node --watch src/server.js"
+        "dev": "node --watch src/server.js",
+        "test": "jest --coverage --verbose"
     },
     "dependencies": {
         "bcryptjs": "^2.4.3",
@@ -14,5 +15,15 @@
         "express": "^4.19.2",
         "jsonwebtoken": "^9.0.2",
         "pg": "^8.12.0"
+    },
+    "devDependencies": {
+        "jest": "^30.5.2",
+        "supertest": "^7.3.2"
+    },
+    "jest": {
+        "coveragePathIgnorePatterns": [
+            "/node_modules/",
+            "<rootDir>/src/utils/seedAdmin.js"
+        ]
     }
 }

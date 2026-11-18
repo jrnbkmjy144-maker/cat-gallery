@@ -46,7 +46,11 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Внутрішня помилка сервера.' });
 });
 
-app.listen(PORT, async () => {
-    await seedInitialUsers();
-    console.log(`Сервер Purrfect Art запущено на http://localhost:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, async () => {
+        await seedInitialUsers();
+        console.log(`Сервер Purrfect Art запущено на http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;
